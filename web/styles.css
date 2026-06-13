@@ -184,6 +184,22 @@ button { font: inherit; cursor: pointer; border-radius: 8px; font-weight: 600; }
 .snapshot { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
 .spinner { color: var(--muted); }
 
+/* streaming reasoning */
+.steps { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.step { font-size: 12.5px; color: var(--primary); }
+.reasoning {
+  margin: 0; max-height: 260px; overflow-y: auto;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; font-size: 12.5px; line-height: 1.55; color: #475467;
+  white-space: pre-wrap; word-break: break-word;
+  font-family: "SFMono-Regular", "Consolas", "Microsoft YaHei", monospace;
+}
+.reasoning:empty { display: none; }
+
+/* settings */
+.setting-row { display: flex; align-items: center; gap: 14px; font-weight: 600; }
+.setting-row select { width: auto; min-width: 140px; }
+
 @media (max-width: 760px) {
   .form-grid { grid-template-columns: 1fr 1fr; }
   .analysis-grid { grid-template-columns: 1fr; }

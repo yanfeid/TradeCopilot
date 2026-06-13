@@ -3,24 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TradeCopilot · 交易副驾</title>
+  <title>TradeCopilot</title>
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
   <header class="topbar">
     <div class="brand">📈 TradeCopilot</div>
     <nav class="tabs" id="tabs">
-      <button data-tab="dashboard" class="active">总览</button>
-      <button data-tab="journal">交易记录</button>
-      <button data-tab="review">复盘</button>
-      <button data-tab="watchlist">自选股</button>
-      <button data-tab="calendar">日历事件</button>
-      <button data-tab="analyze">AI 分析</button>
+      <button data-tab="dashboard" class="active" data-i18n="nav.dashboard">总览</button>
+      <button data-tab="journal" data-i18n="nav.journal">交易记录</button>
+      <button data-tab="review" data-i18n="nav.review">复盘</button>
+      <button data-tab="watchlist" data-i18n="nav.watchlist">自选股</button>
+      <button data-tab="calendar" data-i18n="nav.calendar">日历事件</button>
+      <button data-tab="analyze" data-i18n="nav.analyze">AI 分析</button>
+      <button data-tab="settings" data-i18n="nav.settings">设置</button>
     </nav>
     <div class="status">
       <span id="refresh-status" class="muted"></span>
-      <button id="refresh-now" class="btn-soft">↻ 刷新</button>
-      <label class="switch"><input type="checkbox" id="autorefresh" /> 自动刷新</label>
+      <button id="refresh-now" class="btn-soft" data-i18n="btn.refresh">↻ 刷新</button>
+      <label class="switch"><input type="checkbox" id="autorefresh" /> <span data-i18n="common.autorefresh">自动刷新</span></label>
     </div>
   </header>
 
@@ -28,17 +29,12 @@
     <!-- 总览 -->
     <section id="dashboard" class="tab active">
       <div class="cards" id="dash-cards"></div>
-
       <div class="panel">
-        <div class="panel-head">
-          <h3>持仓明细</h3>
-          <span class="muted small">根据交易记录自动计算 · 均价成本法 · 近实时报价</span>
-        </div>
+        <div class="panel-head"><h3 data-i18n="dash.positions">持仓明细</h3><span class="muted small" data-i18n="dash.positions_sub">根据交易记录自动计算 · 均价成本法 · 近实时报价</span></div>
         <div id="positions-table"></div>
       </div>
-
       <div class="panel">
-        <div class="panel-head"><h3>未来 30 天事件</h3></div>
+        <div class="panel-head"><h3 data-i18n="dash.events30">未来 30 天事件</h3></div>
         <div id="dash-events" class="list"></div>
       </div>
     </section>
@@ -46,30 +42,29 @@
     <!-- 交易记录 -->
     <section id="journal" class="tab">
       <div class="panel">
-        <div class="panel-head"><h3>记一笔交易</h3><span class="muted small">手动填写,重点是写下你的「理由」</span></div>
+        <div class="panel-head"><h3 data-i18n="j.title">记一笔交易</h3><span class="muted small" data-i18n="j.sub">手动填写,重点是写下你的「理由」</span></div>
         <form id="trade-form" class="form-grid">
-          <label>代码<input name="ticker" placeholder="AAPL" required /></label>
-          <label>方向<select name="action"><option value="BUY">买入 BUY</option><option value="SELL">卖出 SELL</option></select></label>
-          <label>数量<input name="quantity" type="number" step="any" placeholder="10" required /></label>
-          <label>价格<input name="price" type="number" step="any" placeholder="190.50" required /></label>
-          <label>日期<input name="trade_date" type="date" required /></label>
-          <label>信心<select name="confidence"><option value="">—</option><option value="1">1 低</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 高</option></select></label>
-          <label>情绪<input name="emotion" placeholder="冷静 / FOMO / 恐慌" /></label>
-          <label>标签<input name="tags" placeholder="长线 / 试仓" /></label>
-          <label class="wide">理由(为什么做这笔交易?)<textarea name="thesis" placeholder="例:财报超预期,看好下季度指引……"></textarea></label>
-          <button type="submit" class="btn-primary wide">添加交易</button>
+          <label><span data-i18n="f.ticker">代码</span><input name="ticker" placeholder="AAPL" required /></label>
+          <label><span data-i18n="f.action">方向</span><select name="action"><option value="BUY">BUY</option><option value="SELL">SELL</option></select></label>
+          <label><span data-i18n="f.quantity">数量</span><input name="quantity" type="number" step="any" placeholder="10" required /></label>
+          <label><span data-i18n="f.price">价格</span><input name="price" type="number" step="any" placeholder="190.50" required /></label>
+          <label><span data-i18n="f.date">日期</span><input name="trade_date" type="date" required /></label>
+          <label><span data-i18n="f.confidence">信心</span><select name="confidence"><option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
+          <label><span data-i18n="f.emotion">情绪</span><input name="emotion" data-i18n-ph="f.emotion_ph" placeholder="冷静 / FOMO / 恐慌" /></label>
+          <label><span data-i18n="f.tags">标签</span><input name="tags" data-i18n-ph="f.tags_ph" placeholder="长线 / 试仓" /></label>
+          <label class="wide"><span data-i18n="f.thesis">理由(为什么做这笔交易?)</span><textarea name="thesis" data-i18n-ph="f.thesis_ph" placeholder="例:财报超预期,看好下季度指引……"></textarea></label>
+          <button type="submit" class="btn-primary wide" data-i18n="btn.addtrade">添加交易</button>
         </form>
         <div class="import-row">
-          <span class="muted small">或导入 CSV:</span>
+          <span class="muted small" data-i18n="j.csv">或导入 CSV:</span>
           <input type="file" id="csv-file" accept=".csv" />
-          <button id="csv-btn" class="btn-soft">导入</button>
-          <span class="muted small">列名:ticker, action, quantity, price, date</span>
+          <button id="csv-btn" class="btn-soft" data-i18n="btn.import">导入</button>
+          <span class="muted small" data-i18n="j.csvcols">列名:ticker, action, quantity, price, date</span>
         </div>
         <div id="buy-expect"></div>
       </div>
-
       <div class="panel">
-        <div class="panel-head"><h3>历史交易</h3></div>
+        <div class="panel-head"><h3 data-i18n="j.history">历史交易</h3></div>
         <div id="trades-list" class="list"></div>
       </div>
     </section>
@@ -77,7 +72,7 @@
     <!-- 复盘 -->
     <section id="review" class="tab">
       <div class="panel">
-        <div class="panel-head"><h3>交易复盘</h3><span class="muted small">对照你当初的理由,和这只股之后的实际走势</span></div>
+        <div class="panel-head"><h3 data-i18n="r.title">交易复盘</h3><span class="muted small" data-i18n="r.sub">对照你当初的理由,和这只股之后的实际走势</span></div>
         <div id="review-list" class="list"></div>
       </div>
       <div id="review-result"></div>
@@ -86,20 +81,20 @@
     <!-- 自选股 -->
     <section id="watchlist" class="tab">
       <div class="panel">
-        <div class="panel-head"><h3>添加自选</h3></div>
+        <div class="panel-head"><h3 data-i18n="w.add">添加自选</h3></div>
         <form id="watch-form" class="form-row">
-          <input name="ticker" placeholder="代码,如 NVDA" required />
-          <input name="note" placeholder="备注(可选)" />
-          <button type="submit" class="btn-primary">添加</button>
+          <input name="ticker" data-i18n-ph="w.ticker_ph" placeholder="代码,如 NVDA" required />
+          <input name="note" data-i18n-ph="w.note_ph" placeholder="备注(可选)" />
+          <button type="submit" class="btn-primary" data-i18n="btn.add">添加</button>
         </form>
       </div>
       <div id="watch-list" class="cards"></div>
 
       <div class="panel">
-        <div class="panel-head"><h3>热门板块</h3><span class="muted small" id="themes-status"></span></div>
+        <div class="panel-head"><h3 data-i18n="w.themes">热门板块</h3><span class="muted small" id="themes-status"></span></div>
         <div class="form-row">
-          <button id="themes-refresh" class="btn-primary">🔍 用 Claude 更新最热(联网)</button>
-          <button id="themes-reset" class="btn-soft">恢复默认榜单</button>
+          <button id="themes-refresh" class="btn-primary" data-i18n="btn.themesrefresh">🔍 用 Claude 更新最热(联网)</button>
+          <button id="themes-reset" class="btn-soft" data-i18n="btn.themesreset">恢复默认榜单</button>
         </div>
         <div id="themes"></div>
       </div>
@@ -108,39 +103,36 @@
     <!-- 日历事件 -->
     <section id="calendar" class="tab">
       <div class="panel">
-        <div class="panel-head"><h3>事件来源</h3><span class="muted small" id="cal-status">打开本页会自动同步财报日与非农</span></div>
+        <div class="panel-head"><h3 data-i18n="c.source">事件来源</h3><span class="muted small" id="cal-status"></span></div>
         <div class="form-row">
-          <button id="sync-now" class="btn-soft">↻ 重新同步(免费)</button>
-          <button id="macro-claude" class="btn-primary">🔍 用 Claude 刷新宏观日历(联网)</button>
+          <button id="sync-now" class="btn-soft" data-i18n="btn.resync">↻ 重新同步(免费)</button>
+          <button id="macro-claude" class="btn-primary" data-i18n="btn.macroclaude">🔍 用 Claude 刷新宏观日历(联网)</button>
         </div>
         <div class="form-row" style="margin-top:10px">
-          <input id="event-search" placeholder="搜索影响某主题/股票的未来事件,如 NVDA、AI 芯片监管、油价" style="flex:1;min-width:280px" />
-          <button id="search-btn" class="btn-soft">用 Claude 搜索</button>
+          <input id="event-search" data-i18n-ph="c.search_ph" placeholder="搜索影响某主题/股票的未来事件,如 NVDA、AI 芯片监管、油价" style="flex:1;min-width:280px" />
+          <button id="search-btn" class="btn-soft" data-i18n="btn.search">用 Claude 搜索</button>
         </div>
-        <p class="muted small">自动同步(财报日 + 非农)是免费的;点「Claude 刷新/搜索」才会用到你的订阅额度,会联网查官方来源。</p>
+        <p class="muted small" data-i18n="c.note">自动同步(财报日 + 非农)免费;点「Claude 刷新/搜索」才会用到订阅额度,会联网查官方来源。</p>
       </div>
-
       <div class="panel">
-        <div class="panel-head"><h3>手动添加事件</h3><span class="muted small">先点下面的快捷按钮填好标题,再选日期</span></div>
+        <div class="panel-head"><h3 data-i18n="c.manual">手动添加事件</h3><span class="muted small" data-i18n="c.manual_sub">先点下面的快捷按钮填好标题,再选日期</span></div>
         <div class="form-row chips" id="macro-quick">
           <button type="button" class="chip" data-title="非农就业 (NFP)">非农 NFP</button>
           <button type="button" class="chip" data-title="CPI 通胀数据">CPI</button>
-          <button type="button" class="chip" data-title="FOMC 美联储议息">美联储 FOMC</button>
+          <button type="button" class="chip" data-title="FOMC 美联储议息">FOMC</button>
           <button type="button" class="chip" data-title="PCE 通胀数据">PCE</button>
           <button type="button" class="chip" data-title="GDP 数据">GDP</button>
         </div>
         <form id="event-form" class="form-row">
-          <input name="ticker" placeholder="代码(可选)" />
-          <input name="title" placeholder="事件标题" required />
+          <input name="ticker" data-i18n-ph="c.ticker_ph" placeholder="代码(可选)" />
+          <input name="title" data-i18n-ph="c.title_ph" placeholder="事件标题" required />
           <input name="event_date" type="date" required />
-          <input name="category" value="custom" title="分类" />
-          <button type="submit" class="btn-primary">添加</button>
+          <input name="category" value="custom" />
+          <button type="submit" class="btn-primary" data-i18n="btn.add">添加</button>
         </form>
-        <p class="muted small">CPI / 美联储没有固定公式,去 BLS / 美联储官网查到日期后手动加(非农可一键自动生成)。</p>
       </div>
-
       <div class="panel">
-        <div class="panel-head"><h3>所有事件</h3></div>
+        <div class="panel-head"><h3 data-i18n="c.all">所有事件</h3></div>
         <div id="events-list" class="list"></div>
       </div>
     </section>
@@ -148,16 +140,34 @@
     <!-- AI 分析 -->
     <section id="analyze" class="tab">
       <div class="panel">
-        <div class="panel-head"><h3>分析一只股票</h3></div>
+        <div class="panel-head"><h3 data-i18n="a.title">分析一只股票</h3></div>
         <form id="analyze-form" class="form-row">
-          <input name="ticker" placeholder="代码,如 TSLA" required />
-          <button type="submit" class="btn-primary">综合分析</button>
-          <button type="button" id="earnings-btn" class="btn-soft">财报分析</button>
+          <input name="ticker" data-i18n-ph="a.ticker_ph" placeholder="代码,如 TSLA" required />
+          <button type="submit" class="btn-primary" data-i18n="btn.desk">综合分析</button>
+          <button type="button" id="earnings-btn" class="btn-soft" data-i18n="btn.earnings">财报分析</button>
         </form>
-        <p class="muted small"><strong>综合分析</strong>:多视角 + 你的持仓给出评级。<strong>财报分析</strong>:专门拆解最新财报(超预期/趋势/指引)。
-          都用<strong>你的 Claude 订阅</strong>(本地 <code>claude</code> 命令行,无需 API key)。仅供研究,非投资建议。</p>
+        <p class="muted small" data-i18n="a.hint">综合分析:多视角 + 你的持仓给出评级。财报分析:拆解最新财报。都用你的 Claude 订阅(本地 claude 命令行,无需 API key)。仅供研究,非投资建议。</p>
       </div>
       <div id="analyze-result"></div>
+    </section>
+
+    <!-- 设置 -->
+    <section id="settings" class="tab">
+      <div class="panel">
+        <div class="panel-head"><h3 data-i18n="s.title">设置</h3></div>
+        <label class="setting-row">
+          <span data-i18n="s.language">界面与分析语言</span>
+          <select id="lang-select">
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+        <p class="muted small" data-i18n="s.language_note">切换后界面立即生效;AI 分析与日历事件会用所选语言输出。</p>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3 data-i18n="s.about">关于</h3></div>
+        <p class="muted small" data-i18n="s.about_note">TradeCopilot 是只跑在你本机的个人交易副驾。数据存在本地,不上传。AI 功能走你的 Claude 订阅。仅供研究,非投资建议。</p>
+      </div>
     </section>
   </main>
 
