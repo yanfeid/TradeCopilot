@@ -37,6 +37,8 @@ const I18N = {
     "cal.synced": "宏观日历上次 Claude 刷新:", "cal.notsynced": "宏观日历尚未用 Claude 拉取过",
     "cal.pulling": "正在用 Claude 联网拉取宏观日历……", "cal.refreshed": "已刷新宏观日历", "cal.failed": "宏观拉取失败:",
     "src.auto": "自动", "src.claude": "Claude", "src.search": "Claude搜索",
+    "chip.nfp": "非农 NFP", "chip.cpi": "CPI", "chip.fomc": "FOMC", "chip.pce": "PCE", "chip.gdp": "GDP",
+    "event.nfp": "非农就业 (NFP)", "event.cpi": "CPI 通胀数据", "event.fomc": "FOMC 美联储议息", "event.pce": "PCE 通胀数据", "event.gdp": "GDP 数据",
     "a.title": "分析一只股票", "a.ticker_ph": "代码,如 TSLA", "btn.desk": "综合分析", "btn.earnings": "财报分析",
     "a.hint": "综合分析:多视角 + 你的持仓给出评级。财报分析:拆解最新财报。都用你的 Claude 订阅(本地 claude 命令行,无需 API key)。仅供研究,非投资建议。",
     "a.process": "分析过程", "a.gathering": "正在拉取数据…", "a.thinking": "Claude 正在思考与推理…",
@@ -93,6 +95,8 @@ const I18N = {
     "cal.synced": "Macro calendar last Claude refresh: ", "cal.notsynced": "Macro calendar not yet pulled via Claude",
     "cal.pulling": "Pulling macro calendar via Claude…", "cal.refreshed": "Macro calendar refreshed", "cal.failed": "Macro pull failed: ",
     "src.auto": "auto", "src.claude": "Claude", "src.search": "Claude search",
+    "chip.nfp": "NFP", "chip.cpi": "CPI", "chip.fomc": "FOMC", "chip.pce": "PCE", "chip.gdp": "GDP",
+    "event.nfp": "Non-farm payrolls (NFP)", "event.cpi": "CPI inflation report", "event.fomc": "FOMC (Fed rate decision)", "event.pce": "PCE inflation report", "event.gdp": "GDP report",
     "a.title": "Analyze a stock", "a.ticker_ph": "Ticker, e.g. TSLA", "btn.desk": "Full analysis", "btn.earnings": "Earnings analysis",
     "a.hint": "Full analysis: multi-perspective rating incl. your positions. Earnings analysis: latest report. Both use your Claude subscription (local claude CLI, no API key). Research only — not financial advice.",
     "a.process": "Analysis process", "a.gathering": "Gathering data…", "a.thinking": "Claude is thinking & reasoning…",
@@ -336,8 +340,22 @@ function renderThemes(d) {
   $("#themes-status").textContent = d.source === "claude" ? t("th.claude") + (d.updated_at ? " · " + new Date(d.updated_at).toLocaleString() : "") : t("th.default");
   $("#themes").innerHTML = d.themes.map(themeBlock).join("");
 }
+const THEME_NAMES = {
+  semis: { zh: "半导体", en: "Semiconductors" },
+  ai: { zh: "人工智能", en: "AI" },
+  space: { zh: "太空", en: "Space" },
+  optical: { zh: "光模块", en: "Optical modules" },
+  biopharma: { zh: "医药生物", en: "Biotech & Pharma" },
+  crypto: { zh: "加密货币", en: "Crypto" },
+  ev: { zh: "新能源车", en: "EV" },
+  quantum: { zh: "量子计算", en: "Quantum computing" },
+  nuclear: { zh: "核能与铀", en: "Nuclear & Uranium" },
+  gold: { zh: "黄金/贵金属", en: "Gold & Precious metals" },
+  fintech: { zh: "金融科技/支付", en: "Fintech & Payments" },
+};
+const themeName = (g) => (THEME_NAMES[g.key] && THEME_NAMES[g.key][lang]) || g.name;
 function themeBlock(g) {
-  return `<div class="theme-block"><h4>${esc(g.name)} <span class="muted small">${g.stocks.length} ${t("intraday.cnt")}</span></h4><div class="stock-grid">${g.stocks.map(stockTile).join("")}</div></div>`;
+  return `<div class="theme-block"><h4>${esc(themeName(g))} <span class="muted small">${g.stocks.length} ${t("intraday.cnt")}</span></h4><div class="stock-grid">${g.stocks.map(stockTile).join("")}</div></div>`;
 }
 function stockTile(s) {
   const has = watchSet.has(s.ticker);
@@ -404,7 +422,7 @@ $("#search-btn").addEventListener("click", async () => {
   btn.textContent = orig; btn.disabled = false;
 });
 document.querySelectorAll("#macro-quick .chip").forEach((b) => {
-  b.addEventListener("click", () => { const f = $("#event-form"); f.title.value = b.dataset.title; f.category.value = "macro"; f.event_date.focus(); });
+  b.addEventListener("click", () => { const f = $("#event-form"); f.title.value = t(b.dataset.titleKey); f.category.value = "macro"; f.event_date.focus(); });
 });
 
 // ===================== analyze (streaming) =====================
