@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Local personal data — your trade journal / watchlist / events live here
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets / local config
+.env
+.env.enterprise
+.env.*.local
+
+# Generated previews
+icon_preview.png
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
