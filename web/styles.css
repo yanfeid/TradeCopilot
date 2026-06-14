@@ -200,6 +200,15 @@ button { font: inherit; cursor: pointer; border-radius: 8px; font-weight: 600; }
 .setting-row { display: flex; align-items: center; gap: 14px; font-weight: 600; }
 .setting-row select { width: auto; min-width: 140px; }
 
+/* follow-up chat */
+.chat-log { display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; margin-bottom: 12px; }
+.chat-log:empty { display: none; }
+.bubble { padding: 9px 13px; border-radius: 12px; font-size: 14px; line-height: 1.5; max-width: 88%; white-space: pre-wrap; word-break: break-word; }
+.bubble.user { align-self: flex-end; background: var(--primary-weak); border: 1px solid #cfe0fd; }
+.bubble.assistant { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border); }
+.chat-input { display: flex; gap: 8px; }
+.chat-input input { flex: 1; }
+
 @media (max-width: 760px) {
   .form-grid { grid-template-columns: 1fr 1fr; }
   .analysis-grid { grid-template-columns: 1fr; }

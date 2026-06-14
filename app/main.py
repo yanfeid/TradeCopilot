@@ -64,6 +64,13 @@ class SettingsIn(BaseModel):
     language: str
 
 
+class ChatIn(BaseModel):
+    message: str
+    ticker: Optional[str] = None
+    context: dict = {}
+    history: list = []
+
+
 def _get_lang() -> str:
     return get_meta("language") or "zh"
 
@@ -626,6 +633,23 @@ def analyze_stream(ticker: str, kind: str = "desk"):
                 except Exception:
                     pass
         except Exception as e:  # noqa: BLE001 — surface any failure to the stream
+            yield _sse({"type": "error", "text": str(e)})
+        yield _sse({"type": "done"})
+
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.post("/api/chat-stream")
+def chat_stream(c: ChatIn):
+    """Follow-up Q&A about an analysis result, streamed and grounded in context."""
+    lang = _get_lang()
+
+    def gen():
+        try:
+            for ev in analysis.stream_chat(c.context, c.history, c.message, lang):
+                yield _sse(ev)
+        except Exception as e:  # noqa: BLE001
             yield _sse({"type": "error", "text": str(e)})
         yield _sse({"type": "done"})
 

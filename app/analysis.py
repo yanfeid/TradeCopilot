@@ -168,6 +168,26 @@ def stream_review(trade, performance, news, lang="zh") -> Iterator[dict]:
     yield from _stream(prompt + _stream_suffix(lang), system, lang)
 
 
+CHAT_SYSTEM = (
+    "You are the equity analyst who just produced the analysis provided below. "
+    "Answer the user's follow-up questions about this stock, grounded in that "
+    "analysis and the market data given. Be concise and direct; if the data "
+    "can't support an answer, say so. Research, not financial advice."
+)
+
+
+def stream_chat(context, history, message, lang="zh") -> Iterator[dict]:
+    parts = [f"Analysis context you produced earlier:\n```json\n{_dump(context)}\n```\n"]
+    if history:
+        parts.append("Conversation so far:")
+        for m in history[-10:]:
+            who = "User" if m.get("role") == "user" else "You"
+            parts.append(f"{who}: {m.get('content', '')}")
+    parts.append(f"User: {message}\nAnswer:")
+    system = CHAT_SYSTEM + (" Answer in English." if lang == "en" else " 用简体中文回答。")
+    yield from _stream_text("\n".join(parts), system)
+
+
 # ===================== web-search features =====================
 def fetch_macro_events(days: int = 75, lang: str = "zh") -> list[dict[str, Any]]:
     today = date.today().isoformat()
@@ -381,6 +401,61 @@ def _stream_cli(prompt, system, allowed_tools=None) -> Iterator[dict]:
             yield {"type": "result", "data": data}
         else:
             yield {"type": "error", "text": "No result from the model."}
+
+
+def _stream_text(prompt, system) -> Iterator[dict]:
+    """Stream a free-form text answer (for chat) rather than a JSON object."""
+    if PROVIDER == "api":
+        try:
+            yield {"type": "token", "text": _api_text(prompt, system)}
+        except AnalysisError as e:
+            yield {"type": "error", "text": str(e)}
+        yield {"type": "done"}
+        return
+    cmd = _cli_cmd(system, stream=True, allowed_tools=None)
+    try:
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                stderr=subprocess.DEVNULL, text=True,
+                                encoding="utf-8", errors="replace", bufsize=1)
+    except FileNotFoundError:
+        yield {"type": "error", "text": "Could not run the 'claude' CLI."}
+        return
+    try:
+        proc.stdin.write(prompt)
+        proc.stdin.close()
+    except (BrokenPipeError, OSError):
+        pass
+    for line in proc.stdout:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            obj = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if obj.get("type") == "stream_event":
+            ev = obj.get("event", {}) or {}
+            if ev.get("type") == "content_block_delta":
+                d = ev.get("delta", {}) or {}
+                if d.get("type") == "text_delta" and d.get("text"):
+                    yield {"type": "token", "text": d["text"]}
+    proc.wait()
+    yield {"type": "done"}
+
+
+def _api_text(prompt, system) -> str:
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise AnalysisError("ANALYSIS_PROVIDER=api but no ANTHROPIC_API_KEY is set.")
+    import anthropic
+    client = anthropic.Anthropic()
+    base = dict(model=API_MODEL, max_tokens=4000, system=system,
+                messages=[{"role": "user", "content": prompt}])
+    try:
+        resp = client.messages.create(**base, thinking={"type": "adaptive"},
+                                      output_config={"effort": "low"})
+    except anthropic.BadRequestError:
+        resp = client.messages.create(**base)
+    return "".join(b.text for b in resp.content if b.type == "text")
 
 
 def _run_api(prompt, system) -> dict[str, Any]:

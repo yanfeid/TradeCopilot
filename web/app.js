@@ -43,6 +43,7 @@ const I18N = {
     "a.hint": "综合分析:多视角 + 你的持仓给出评级。财报分析:拆解最新财报。都用你的 Claude 订阅(本地 claude 命令行,无需 API key)。仅供研究,非投资建议。",
     "a.process": "分析过程", "a.gathering": "正在拉取数据…", "a.thinking": "Claude 正在思考与推理…",
     "a.reasoning_done": "推理完成,生成结论…", "step.search": "🔎 联网搜索", "step.fetch": "🌐 抓取网页", "step.tool": "🔧 调用工具",
+    "chat.title": "追问分析", "chat.placeholder": "就这次分析继续提问,如:为什么给 Hold?加息会怎样?", "chat.send": "发送",
     "an.bull": "🐂 看多", "an.bear": "🐻 看空", "an.risks": "⚠ 主要风险", "an.catalysts": "🗓 即将到来的催化剂",
     "an.mytrades": "💼 对我持仓的点评", "an.model": "模型", "an.disclaimer": "仅供研究,非投资建议。",
     "an.nextearn": "下次财报", "an.lasteps": "上次 EPS", "an.est": "预期", "an.perf1m": "1月", "an.perf3m": "3月", "an.perf6m": "6月",
@@ -101,6 +102,7 @@ const I18N = {
     "a.hint": "Full analysis: multi-perspective rating incl. your positions. Earnings analysis: latest report. Both use your Claude subscription (local claude CLI, no API key). Research only — not financial advice.",
     "a.process": "Analysis process", "a.gathering": "Gathering data…", "a.thinking": "Claude is thinking & reasoning…",
     "a.reasoning_done": "Reasoning done, drafting conclusion…", "step.search": "🔎 Web search", "step.fetch": "🌐 Fetch page", "step.tool": "🔧 Tool call",
+    "chat.title": "Ask a follow-up", "chat.placeholder": "Ask about this analysis, e.g. why Hold? what if rates rise?", "chat.send": "Send",
     "an.bull": "🐂 Bull case", "an.bear": "🐻 Bear case", "an.risks": "⚠ Key risks", "an.catalysts": "🗓 Upcoming catalysts",
     "an.mytrades": "💼 On my positions", "an.model": "Model", "an.disclaimer": "Research only — not financial advice.",
     "an.nextearn": "next earnings", "an.lasteps": "last EPS", "an.est": "est", "an.perf1m": "1m", "an.perf3m": "3m", "an.perf6m": "6m",
@@ -437,7 +439,7 @@ window.streamAnalyze = async (ticker, kind) => {
       <div class="panel-head"><h3>${t("a.process")} — ${esc(ticker)}</h3><span id="stream-status" class="muted small">${t("a.gathering")}</span></div>
       <div id="stream-steps" class="steps"></div>
       <pre id="stream-reasoning" class="reasoning"></pre>
-    </div><div id="final-result"></div>`;
+    </div><div id="final-result"></div><div id="chat-box"></div>`;
   const reasoning = $("#stream-reasoning"), steps = $("#stream-steps"), status = $("#stream-status");
   let store = {};
   try {
@@ -464,11 +466,56 @@ window.streamAnalyze = async (ticker, kind) => {
             : { ticker, snapshot: store.snapshot, analysis: ev.data };
           $("#final-result").innerHTML = kind === "earnings" ? renderEarnings(data) : renderAnalysis(data);
           $("#final-result").scrollIntoView({ behavior: "smooth", block: "nearest" });
+          setupChat(data);
         } else if (ev.type === "error") { status.textContent = "⚠ " + ev.text; }
       }
     }
   } catch (err) { $("#final-result").innerHTML = `<div class="panel"><p class="neg">⚠ ${esc(err.message)}</p></div>`; }
 };
+
+// follow-up chat about the analysis
+let chatCtx = null, chatHistory = [];
+function setupChat(ctx) {
+  chatCtx = ctx; chatHistory = [];
+  $("#chat-box").innerHTML = `<div class="panel">
+      <div class="panel-head"><h3>${t("chat.title")}</h3></div>
+      <div id="chat-log" class="chat-log"></div>
+      <form id="chat-form" class="chat-input"><input id="chat-msg" placeholder="${esc(t("chat.placeholder"))}" autocomplete="off" /><button class="btn-primary">${t("chat.send")}</button></form>
+    </div>`;
+  $("#chat-form").addEventListener("submit", (e) => { e.preventDefault(); sendChat(); });
+}
+function addBubble(role, text) {
+  const log = $("#chat-log"); const div = document.createElement("div");
+  div.className = "bubble " + role; div.textContent = text;
+  log.appendChild(div); log.scrollTop = log.scrollHeight; return div;
+}
+async function sendChat() {
+  const inp = $("#chat-msg"); const msg = inp.value.trim(); if (!msg) return; inp.value = "";
+  addBubble("user", msg);
+  const prior = [...chatHistory];
+  const bubble = addBubble("assistant", "…");
+  let answer = "";
+  try {
+    const resp = await fetch("/api/chat-stream", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg, ticker: chatCtx && chatCtx.ticker, context: chatCtx || {}, history: prior }),
+    });
+    const reader = resp.body.getReader(); const dec = new TextDecoder(); let buf = "";
+    while (true) {
+      const { value, done } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true }); let i;
+      while ((i = buf.indexOf("\n\n")) >= 0) {
+        const chunk = buf.slice(0, i); buf = buf.slice(i + 2);
+        if (!chunk.startsWith("data:")) continue;
+        let ev; try { ev = JSON.parse(chunk.slice(5).trim()); } catch (_) { continue; }
+        if (ev.type === "token") { answer += ev.text; bubble.textContent = answer; $("#chat-log").scrollTop = $("#chat-log").scrollHeight; }
+        else if (ev.type === "error") { bubble.textContent = "⚠ " + ev.text; }
+      }
+    }
+  } catch (e) { bubble.textContent = "⚠ " + e.message; }
+  if (!answer) bubble.textContent = bubble.textContent || "—";
+  chatHistory.push({ role: "user", content: msg }, { role: "assistant", content: answer });
+}
 
 function renderAnalysis(data) {
   const a = data.analysis, s = data.snapshot || {};
